@@ -51,6 +51,22 @@ body {
   transform: translateY(0);
 }
 
+/* Fade in up animation for bubbles */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeInUp {
+  animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;

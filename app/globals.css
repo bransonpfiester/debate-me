@@ -28,6 +28,29 @@ body {
   transform: translateY(0);
 }
 
+/* Vote bar animation */
+.vote-bar-inner {
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 1.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.vote-bar-inner.animate {
+  transform: scaleX(1);
+}
+
+/* Stagger section - bigger movement */
+.stagger-text {
+  opacity: 0;
+  transform: translateY(60px);
+  transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.stagger-text.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;

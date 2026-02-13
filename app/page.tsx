@@ -1,10 +1,19 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 
 export default function LandingPage() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 80);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -73,8 +82,11 @@ export default function LandingPage() {
     // Scroll reveal animations
     const observer = new IntersectionObserver(
       (entries) => {
-        entries.forEach((entry, index) => {
+        entries.forEach((entry) => {
           if (entry.isIntersecting) {
+            const siblings = Array.from(entry.target.parentElement?.children || []);
+            const index = siblings.indexOf(entry.target);
+            
             setTimeout(() => {
               entry.target.classList.add('visible');
             }, index * 120);
@@ -85,12 +97,63 @@ export default function LandingPage() {
     );
 
     document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
+    document.querySelectorAll('.stagger-text').forEach((el) => observer.observe(el));
 
-    return () => observer.disconnect();
+    // Vote bar animation
+    const voteBarObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('animate');
+          }
+        });
+      },
+      { threshold: 0.3 }
+    );
+
+    document.querySelectorAll('.vote-bar-inner').forEach((el) => voteBarObserver.observe(el));
+
+    return () => {
+      observer.disconnect();
+      voteBarObserver.disconnect();
+    };
   }, []);
 
   return (
     <main className="relative bg-[#f0ece4] text-[#0a0a0a]">
+      {/* Nav */}
+      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-400 ${
+        isScrolled 
+          ? 'bg-[rgba(240,236,228,0.85)] backdrop-blur-[20px] py-4' 
+          : 'bg-transparent py-7'
+      }`}>
+        <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-[#0a0a0a] flex items-center justify-center">
+              <span className="text-[#f0ece4] text-sm">→</span>
+            </div>
+            <span className="font-serif italic text-xl">Debate Me</span>
+          </div>
+          
+          <div className="flex items-center gap-8">
+            <Link href="/feed" className="font-sans text-sm opacity-50 hover:opacity-100 transition-opacity">
+              Feed
+            </Link>
+            <Link href="/leaderboard" className="font-sans text-sm opacity-50 hover:opacity-100 transition-opacity">
+              Leaderboard
+            </Link>
+            <Link href="/profile" className="font-sans text-sm opacity-50 hover:opacity-100 transition-opacity">
+              Profile
+            </Link>
+            <Link 
+              href="/start" 
+              className="px-4 py-2 bg-[#0a0a0a] text-[#f0ece4] rounded-full text-xs uppercase tracking-[2px] hover:scale-105 transition-transform"
+            >
+              Start Debate
+            </Link>
+          </div>
+        </div>
+      </nav>
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
         <canvas
@@ -105,7 +168,7 @@ export default function LandingPage() {
           <p className="font-sans font-light text-xl text-[#8a8578] max-w-[480px] mx-auto reveal">
             Argue with AI. Let the internet decide who won.
           </p>
-          <button className="mt-12 px-8 py-4 bg-[#0a0a0a] text-[#f0ece4] rounded-full font-sans text-sm uppercase tracking-[2px] hover:bg-[#2a2a2a] transition-colors reveal">
+          <button className="mt-12 px-8 py-4 bg-[#0a0a0a] text-[#f0ece4] rounded-full font-sans text-sm uppercase tracking-[2px] hover:scale-[1.06] hover:shadow-[0_12px_48px_rgba(0,0,0,0.15)] transition-all duration-300 reveal">
             Enter the Arena →
           </button>
         </div>
@@ -113,10 +176,10 @@ export default function LandingPage() {
 
       {/* Stagger Section */}
       <section className="py-[200px] px-6 max-w-6xl mx-auto">
-        <h2 className="text-[72px] font-serif italic leading-[1.05] tracking-[-2px] text-left mb-[200px] reveal">
+        <h2 className="text-[72px] font-serif italic leading-[1.05] tracking-[-2px] text-left mb-[200px] stagger-text">
           You argue your <span className="text-[#2a5cff]">point</span>.
         </h2>
-        <h2 className="text-[72px] font-serif italic leading-[1.05] tracking-[-2px] text-right reveal">
+        <h2 className="text-[72px] font-serif italic leading-[1.05] tracking-[-2px] text-right stagger-text">
           AI argues <span className="text-[#e03e36]">back</span>.
         </h2>
       </section>
@@ -160,7 +223,7 @@ export default function LandingPage() {
 
       {/* Arena Preview */}
       <section className="py-[160px] px-6">
-        <div className="max-w-4xl mx-auto bg-white rounded-[24px] p-12 shadow-lg reveal">
+        <div className="max-w-4xl mx-auto bg-white rounded-[24px] p-12 shadow-lg reveal hover:bg-[rgba(0,0,0,0.01)] transition-all duration-300">
           <div className="flex items-center justify-between mb-8">
             <h4 className="font-serif italic text-2xl">
               "Pineapple belongs on pizza."
@@ -196,7 +259,12 @@ export default function LandingPage() {
 
           <div className="mt-8">
             <div className="h-[6px] bg-[#f0ece4] rounded-full overflow-hidden">
-              <div className="h-full bg-gradient-to-r from-[#2a5cff] to-[#e03e36]" style={{width: '52%'}} />
+              <div 
+                className="vote-bar-inner h-full rounded-full"
+                style={{
+                  background: 'linear-gradient(90deg, #2a5cff 0%, #2a5cff 52%, transparent 52%, transparent 53%, #e03e36 53%, #e03e36 100%)'
+                }}
+              />
             </div>
             <div className="flex justify-between mt-2 text-[#8a8578] text-sm font-sans">
               <span>52% Human</span>
@@ -214,7 +282,7 @@ export default function LandingPage() {
           { num: '03', title: 'Let the crowd decide', desc: 'Your debate goes public. The internet votes. Elo adjusts.' },
           { num: '04', title: 'Climb the ranks', desc: 'Win debates, gain Elo, unlock badges. Become a legend.' }
         ].map((feature) => (
-          <div key={feature.num} className="flex gap-12 mb-20 reveal">
+          <div key={feature.num} className="flex gap-12 mb-20 reveal hover:bg-[rgba(0,0,0,0.01)] hover:-mx-6 px-6 py-4 rounded-2xl transition-all duration-300">
             <div className="font-serif italic text-[72px] text-[#8a8578] leading-none">
               {feature.num}.
             </div>
@@ -245,7 +313,7 @@ export default function LandingPage() {
             ].map((user) => (
               <div
                 key={user.rank}
-                className="flex items-center gap-8 py-4 border-b border-[rgba(240,236,228,0.06)] reveal"
+                className="flex items-center gap-8 py-4 border-b border-[rgba(240,236,228,0.06)] reveal hover:bg-[rgba(255,255,255,0.04)] hover:-mx-6 px-6 rounded-lg transition-all duration-300"
               >
                 <span className="font-serif italic text-2xl w-12">{user.rank}.</span>
                 <div className="w-8 h-8 rounded-full bg-[#2a5cff]" />
@@ -266,7 +334,7 @@ export default function LandingPage() {
         </h3>
         <Link
           href="/auth/signup"
-          className="inline-block px-12 py-5 bg-[#0a0a0a] text-[#f0ece4] rounded-full font-sans text-sm uppercase tracking-[2px] hover:bg-[#2a2a2a] transition-colors reveal"
+          className="inline-block px-12 py-5 bg-[#0a0a0a] text-[#f0ece4] rounded-full font-sans text-sm uppercase tracking-[2px] hover:scale-[1.06] hover:shadow-[0_12px_48px_rgba(0,0,0,0.15)] transition-all duration-300 reveal"
         >
           Start Your First Debate →
         </Link>

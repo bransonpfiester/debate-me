@@ -76,11 +76,23 @@ body {
   background: #f0ece4;
 }
 
+.dark ::-webkit-scrollbar-track {
+  background: #0a0a0a;
+}
+
 ::-webkit-scrollbar-thumb {
   background: #8a8578;
   border-radius: 4px;
 }
 
+.dark ::-webkit-scrollbar-thumb {
+  background: #a8a29e;
+}
+
 ::-webkit-scrollbar-thumb:hover {
   background: #0a0a0a;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #f0ece4;
 }

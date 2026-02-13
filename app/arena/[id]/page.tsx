@@ -7,7 +7,7 @@ export default function ArenaPage({ params }: { params: { id: string } }) {
   const router = useRouter();
   const [currentRound, setCurrentRound] = useState(1);
   const [userArgument, setUserArgument] = useState('');
-  const [arguments, setArguments] = useState<Array<{round: number, user: string, ai: string}>>([]);
+  const [debateRounds, setDebateRounds] = useState<Array<{round: number, user: string, ai: string}>>([]);
   const [isAIThinking, setIsAIThinking] = useState(false);
 
   const wordCount = userArgument.trim().split(/\s+/).filter(w => w).length;
@@ -22,9 +22,9 @@ export default function ArenaPage({ params }: { params: { id: string } }) {
     // TODO: Call Anthropic Claude API for AI response
     await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate API call
     
-    const aiResponse = "This is a placeholder AI response. The actual implementation will use the Anthropic Claude API to generate intelligent counterarguments.";
+    const aiResponse = "This is a placeholder AI response. The actual implementation will use the Anthropic Claude API to generate intelligent counterdebateRounds.";
     
-    setArguments([...arguments, {
+    setDebateRounds([...debateRounds, {
       round: currentRound,
       user: userArgument,
       ai: aiResponse
@@ -46,7 +46,7 @@ export default function ArenaPage({ params }: { params: { id: string } }) {
     router.push(`/debate/${params.id}`);
   };
 
-  const isComplete = currentRound > 3 || arguments.length >= 3;
+  const isComplete = currentRound > 3 || debateRounds.length >= 3;
 
   return (
     <div className="min-h-screen bg-[#f0ece4] py-12 px-6">
@@ -65,10 +65,10 @@ export default function ArenaPage({ params }: { params: { id: string } }) {
 
           {/* Arguments */}
           <div className="space-y-8 mb-12">
-            {arguments.map((arg, index) => (
+            {debateRounds.map((arg, index) => (
               <div key={index}>
                 {/* Round Label */}
-                {index === 0 || arg.round !== arguments[index - 1].round && (
+                {index === 0 || arg.round !== debateRounds[index - 1].round && (
                   <div className="font-serif italic text-[36px] text-[#8a8578] mb-6 text-center">
                     Round {arg.round}
                   </div>
@@ -101,7 +101,7 @@ export default function ArenaPage({ params }: { params: { id: string } }) {
             ))}
 
             {/* Current Round Preview (if not complete) */}
-            {!isComplete && arguments.length < currentRound && (
+            {!isComplete && debateRounds.length < currentRound && (
               <div className="text-center">
                 <div className="font-serif italic text-[36px] text-[#8a8578] mb-6">
                   Round {currentRound}

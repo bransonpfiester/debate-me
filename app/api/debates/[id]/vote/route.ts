@@ -3,10 +3,11 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = createClient();
+    const { id } = await params;
+    const supabase = await createClient();
     const { voteFor } = await request.json();
 
     // Get current user
@@ -20,7 +21,7 @@ export async function POST(
 
     // Insert or update vote
     const { error } = await supabase.from('votes').upsert({
-      debate_id: params.id,
+      debate_id: id,
       voter_id: user.id,
       vote_for: voteFor,
     });
@@ -31,7 +32,7 @@ export async function POST(
     const { data: votes } = await supabase
       .from('votes')
       .select('vote_for')
-      .eq('debate_id', params.id);
+      .eq('debate_id', id);
 
     const humanVotes = votes?.filter((v) => v.vote_for === 'human').length || 0;
     const aiVotes = votes?.filter((v) => v.vote_for === 'ai').length || 0;

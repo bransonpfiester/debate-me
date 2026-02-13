@@ -8,10 +8,11 @@ const anthropic = new Anthropic({
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = createClient();
+    const { id } = await params;
+    const supabase = await createClient();
     const { userArgument, roundNumber } = await request.json();
 
     // Get current user
@@ -27,7 +28,7 @@ export async function POST(
     const { data: debate } = await supabase
       .from('debates')
       .select('*')
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
 
     if (!debate) {
@@ -38,7 +39,7 @@ export async function POST(
     const { data: previousRounds } = await supabase
       .from('rounds')
       .select('*')
-      .eq('debate_id', params.id)
+      .eq('debate_id', id)
       .order('round_number', { ascending: true });
 
     // Generate AI response
@@ -67,7 +68,7 @@ export async function POST(
     const { data: round, error } = await supabase
       .from('rounds')
       .insert({
-        debate_id: params.id,
+        debate_id: id,
         round_number: roundNumber,
         user_argument: userArgument,
         ai_argument: aiArgument,
@@ -82,7 +83,7 @@ export async function POST(
       await supabase
         .from('debates')
         .update({ status: 'completed' })
-        .eq('id', params.id);
+        .eq('id', id);
     }
 
     return NextResponse.json({ round });
